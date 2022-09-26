@@ -1,6 +1,8 @@
 # nginx-openGrok-poc
 This is an example proof of concept for an nginx server using the rewrite directive to transform common openGrok query urls repo and file (with hash), and symbol searches to Sourcegraph query urls.
 
+> *Make sure to check out the [redirect-to-search branch](https://github.com/sourcegraph/nginx-openGrok-poc/tree/redirect-to-search) for alternate behavior*
+
 For Example:
 
 ### **File**
