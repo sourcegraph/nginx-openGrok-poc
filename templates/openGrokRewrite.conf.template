@@ -15,9 +15,9 @@ location ~* /source/xref/([^/]+)/(.+)$ {
   set $file_path $2;
   if ($query_string ~* "r=(.+)") {
     set $revision $1;
-    rewrite ^ https://${SOURCEGRAPH_DOMAIN}${SOURCEGRAPH_CODEHOST}/$repo@$revision/-/blob/$file_path? redirect;
+    rewrite ^ ${SOURCEGRAPH_URI}${SOURCEGRAPH_CODEHOST}/$repo@$revision/-/blob/$file_path? redirect;
   }
-  rewrite ^ https://${SOURCEGRAPH_DOMAIN}${SOURCEGRAPH_CODEHOST}/$repo/-/blob/$file_path? redirect; 
+  rewrite ^ ${SOURCEGRAPH_URI}${SOURCEGRAPH_CODEHOST}/$repo/-/blob/$file_path? redirect; 
 }
 
 # OpenGrok URL
@@ -28,6 +28,6 @@ location ~* /source/xref/([^/]+)/(.+)$ {
 location  /source/search {
   if ($query_string ~* "defs=([^&]*)") {
     set $symbol $1;
-    rewrite ^ https://${SOURCEGRAPH_DOMAIN}/search?q=type:symbol+$symbol? redirect;
+    rewrite ^ ${SOURCEGRAPH_URI}/search?q=type:symbol+$symbol? redirect;
   }
 }
