@@ -32,7 +32,7 @@ server {
   location  /source/search {
     if ($query_string ~* "defs=([^&]*)") {
       set $symbol $1;
-      rewrite ^ https://www.${SOURCEGRAPH_DOMAIN}/search?q=type:symbol+$symbol? redirect;
+      rewrite ^ https://${SOURCEGRAPH_DOMAIN}/search?q=type:symbol+$symbol? redirect;
     }
   }
 }
