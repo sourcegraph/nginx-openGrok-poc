@@ -1,0 +1,38 @@
+server {
+  listen 80;
+  server_name ${NGINX_HOST};
+
+  # rewrite_log on;
+
+  #OpenGrok URL
+  # http://192.168.64.6:8080/source/xref/sourcegraph/client/web/src/enterprise/code-monitoring/testing/
+  #Sourcegraph URL
+  # http://192.168.64.6/github.com/sourcegraph/sourcegraph/-/blob/client/web/src/enterprise/code-monitoring/testing/
+  #
+  # OpenGrok URL
+  # http://192.168.64.6:8080/source/xref/sourcegraph/client/web/src/enterprise/code-monitoring/testing/util.ts?r=b23a28ce
+  # Sourcegraph URL
+  # http://192.168.64.6/github.com/sourcegraph/sourcegraph@04cf0cb07327c01141fad5eb9707600c7eb806c2/-/blob/client/web/src/enterprise/code-monitoring/testing/util.ts
+
+  location ~* /source/xref/([^/]+)/(.+)$ {
+    set $repo $1;
+    set $file_path $2;
+    if ($query_string ~* "r=(.+)") {
+      set $revision $1;
+      rewrite ^ https://www.${SOURCEGRAPH_DOMAIN}/github.com/sourcegraph/$repo@$revision/-/blob/$file_path? redirect;
+    }
+    rewrite ^ https://www.${SOURCEGRAPH_DOMAIN}/github.com/sourcegraph/$repo/-/blob/$file_path? redirect; 
+  }
+
+  # OpenGrok URL
+  # http://192.168.64.6:8080/source/search?full=&defs=OverwriteSettings&refs=&path=&hist=&type=&xrd=&nn=2&si=full&searchall=true&si=full
+  # Sourcegraph URL
+  # http://192.168.64.6/search?q=context:global+repo:%5Egithub%5C.com/sourcegraph/sourcegraph%24+type:symbol+OverwriteSettings&patternType=lucky
+  
+  location  /source/search {
+    if ($query_string ~* "defs=([^&]*)") {
+      set $symbol $1;
+      rewrite ^ https://www.${SOURCEGRAPH_DOMAIN}/search?q=type:symbol+$symbol? redirect;
+    }
+  }
+}
