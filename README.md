@@ -44,5 +44,7 @@ Nginx rewrite rules do not support conditional redirects based on http response 
 
 This presents a major limitation, in that OpenGrok's url schema contains no information about the codehost associated with a repo to extract and use to construct a Sourcegraph url, which does include a codehost. A try block allowing requests to each possible codehost url with a redirect to the first 200 http response would accomplish this, but currently this is unsupported by nginx.
 
+> **An alternative strategy is to redirect open grok repo and file specific nav to general Sourcegraph search results, i.e. an openGrok file url, will direct you to a sourcegraph search for any codehost containing a repo with the same top level directory and filepath -- for this redirect strategy see the [redirect-to-search](https://github.com/sourcegraph/nginx-openGrok-poc/tree/redirect-to-search) branch of this repo.**
+
 That said, a configuration using the openresty image, or a middleware built into Sourcegraph's frontend are still possabilities being investigated. 
 
