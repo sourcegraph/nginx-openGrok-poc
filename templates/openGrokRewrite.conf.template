@@ -7,21 +7,21 @@ server {
   # OpenGrok URL
   # http://192.168.64.6:8080/source/xref/sourcegraph/client/web/src/enterprise/code-monitoring/testing/
   # Sourcegraph URL
-  # http://192.168.64.6/github.com/sourcegraph/sourcegraph/-/blob/client/web/src/enterprise/code-monitoring/testing/
+  # http://192.168.64.6/search?q=context:global+repo:%28.*%29/sourcegraph%24+file:%5Eclient/web/src/enterprise/code-monitoring/testing&patternType=standard
   #
   # OpenGrok URL
   # http://192.168.64.6:8080/source/xref/sourcegraph/client/web/src/enterprise/code-monitoring/testing/util.ts?r=b23a28ce
   # Sourcegraph URL
-  # http://192.168.64.6/github.com/sourcegraph/sourcegraph@04cf0cb07327c01141fad5eb9707600c7eb806c2/-/blob/client/web/src/enterprise/code-monitoring/testing/util.ts
+  # http://192.168.64.6/search?q=context:global+repo:%28.*%29/sourcegraph%24%40b23a28ce+file:%5Eclient/web/src/enterprise/code-monitoring/testing&patternType=standard
 
   location ~* /source/xref/([^/]+)/(.+)$ {
     set $repo $1;
     set $file_path $2;
     if ($query_string ~* "r=(.+)") {
       set $revision $1;
-      rewrite ^ https://${SOURCEGRAPH_DOMAIN}${SOURCEGRAPH_CODEHOST}/$repo@$revision/-/blob/$file_path? redirect;
+      rewrite ^ https://${SOURCEGRAPH_DOMAIN}/search?q=repo:%28.*%29/$repo%24%40$revision+file:%5E$file_path? redirect;
     }
-    rewrite ^ https://${SOURCEGRAPH_DOMAIN}${SOURCEGRAPH_CODEHOST}/$repo/-/blob/$file_path? redirect; 
+    rewrite ^ https://${SOURCEGRAPH_DOMAIN}/search?q=repo:%28.*%29/$repo%24+file:%5E$file_path? redirect; 
   }
 
   # OpenGrok URL
