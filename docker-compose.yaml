@@ -12,8 +12,13 @@ services:
     mem_limit: '4g'
     environment:
       - 'NGINX_HOST=localhost'
-      - 'SOURCEGRAPH_DOMAIN=sourcegraph.com'
-      - 'SOURCEGRAPH_CODEHOST=gitlab.com/sourcegraph'
+      - 'SOURCEGRAPH_DOMAIN=www.sourcegraph.com'
+      # Include the subdomain, ex: www
+      - 'SOURCEGRAPH_CODEHOST=/github.com/sourcegraph'
+      # The env var should be set starting with a forawrd slash (/) for github, GHE, and gitlab codehosts 
+      # whose urls contain a concept of server name and org
+      #
+      # Other codehosts like "generic git host", and gitolite should be left empty ('SOURCEGRAPH_CODEHOST=')
     volumes:
       - './nginx.conf:/etc/nginx/nginx.conf'
       - './templates:/etc/nginx/templates'

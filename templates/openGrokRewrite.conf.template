@@ -19,9 +19,9 @@ server {
     set $file_path $2;
     if ($query_string ~* "r=(.+)") {
       set $revision $1;
-      rewrite ^ https://www.${SOURCEGRAPH_DOMAIN}/${SOURCEGRAPH_CODEHOST}/$repo@$revision/-/blob/$file_path? redirect;
+      rewrite ^ https://${SOURCEGRAPH_DOMAIN}${SOURCEGRAPH_CODEHOST}/$repo@$revision/-/blob/$file_path? redirect;
     }
-    rewrite ^ https://www.${SOURCEGRAPH_DOMAIN}/${SOURCEGRAPH_CODEHOST}/$repo/-/blob/$file_path? redirect; 
+    rewrite ^ https://${SOURCEGRAPH_DOMAIN}${SOURCEGRAPH_CODEHOST}/$repo/-/blob/$file_path? redirect; 
   }
 
   # OpenGrok URL
