@@ -4,9 +4,9 @@ server {
 
   # rewrite_log on;
 
-  #OpenGrok URL
+  # OpenGrok URL
   # http://192.168.64.6:8080/source/xref/sourcegraph/client/web/src/enterprise/code-monitoring/testing/
-  #Sourcegraph URL
+  # Sourcegraph URL
   # http://192.168.64.6/github.com/sourcegraph/sourcegraph/-/blob/client/web/src/enterprise/code-monitoring/testing/
   #
   # OpenGrok URL
@@ -19,9 +19,9 @@ server {
     set $file_path $2;
     if ($query_string ~* "r=(.+)") {
       set $revision $1;
-      rewrite ^ https://www.${SOURCEGRAPH_DOMAIN}/github.com/sourcegraph/$repo@$revision/-/blob/$file_path? redirect;
+      rewrite ^ https://www.${SOURCEGRAPH_DOMAIN}/${SOURCEGRAPH_CODEHOST}/$repo@$revision/-/blob/$file_path? redirect;
     }
-    rewrite ^ https://www.${SOURCEGRAPH_DOMAIN}/github.com/sourcegraph/$repo/-/blob/$file_path? redirect; 
+    rewrite ^ https://www.${SOURCEGRAPH_DOMAIN}/${SOURCEGRAPH_CODEHOST}/$repo/-/blob/$file_path? redirect; 
   }
 
   # OpenGrok URL
