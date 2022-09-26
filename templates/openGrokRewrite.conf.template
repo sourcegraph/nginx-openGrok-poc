@@ -26,8 +26,18 @@ location ~* /source/xref/([^/]+)/(.+)$ {
 # http://192.168.64.6/search?q=context:global+repo:%5Egithub%5C.com/sourcegraph/sourcegraph%24+type:symbol+OverwriteSettings&patternType=lucky
 
 location  /source/search {
-  if ($query_string ~* "defs=([^&]*)") {
-    set $symbol $1;
-    rewrite ^ ${SOURCEGRAPH_URI}/search?q=type:symbol+$symbol? redirect;
-  }
+    if ($arg_full) {
+       set $sg_query "$arg_full";
+    }
+    if ($arg_type) {
+       set $sg_query "$sg_query lang:$arg_type";
+    }
+    if ($arg_path) {
+       set $sg_query "$sg_query file:$arg_path";
+    }
+    rewrite ^ ${SOURCEGRAPH_URI}/search?q=$sg_query redirect;
+#  if ($query_string ~* "defs=([^&]*)") {
+#    set $symbol $1;
+#    rewrite ^ ${SOURCEGRAPH_URI}/search?q=type:symbol+$symbol? redirect;
+#  }
 }
