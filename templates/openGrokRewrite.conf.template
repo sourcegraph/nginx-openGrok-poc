@@ -36,8 +36,10 @@ location  /source/search {
        set $sg_query "$sg_query file:$arg_path";
     }
     rewrite ^ ${SOURCEGRAPH_URI}/search?q=$sg_query redirect;
+
 #  if ($query_string ~* "defs=([^&]*)") {
 #    set $symbol $1;
 #    rewrite ^ ${SOURCEGRAPH_URI}/search?q=type:symbol+$symbol? redirect;
 #  }
+
 }
