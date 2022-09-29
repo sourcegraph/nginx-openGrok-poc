@@ -1,30 +1,19 @@
-# rewrite_log on;
 
-# OpenGrok URL
-# http://192.168.64.6:8080/source/xref/sourcegraph/client/web/src/enterprise/code-monitoring/testing/
-# Sourcegraph URL
-# http://192.168.64.6/github.com/sourcegraph/sourcegraph/-/blob/client/web/src/enterprise/code-monitoring/testing/
-#
-# OpenGrok URL
-# http://192.168.64.6:8080/source/xref/sourcegraph/client/web/src/enterprise/code-monitoring/testing/util.ts?r=b23a28ce
-# Sourcegraph URL
-# http://192.168.64.6/github.com/sourcegraph/sourcegraph@04cf0cb07327c01141fad5eb9707600c7eb806c2/-/blob/client/web/src/enterprise/code-monitoring/testing/util.ts
-
-location ~* /source/xref/([^/]+)/(.+)$ {
-  set $repo $1;
+# Generic rewrite for file/repo and file/repo at revision
+location ~* /source/xref/([^/]+)(?:/(.+))?$ {
+  set $og_repo $1;
   set $file_path $2;
   if ($query_string ~* "r=(.+)") {
-    set $revision $1;
-    rewrite ^ ${SOURCEGRAPH_URI}${SOURCEGRAPH_CODEHOST}/$repo@$revision/-/blob/$file_path? redirect;
+    set $revision @$1;
   }
-  rewrite ^ ${SOURCEGRAPH_URI}${SOURCEGRAPH_CODEHOST}/$repo/-/blob/$file_path? redirect; 
+  if ($file_path != '') {
+    set $file_path /-/blob/$file_path;
+  }
+  rewrite ^ ${SOURCEGRAPH_URI}/$sg_repo$revision$file_path? redirect; 
 }
 
-# OpenGrok URL
-# http://192.168.64.6:8080/source/search?full=&defs=OverwriteSettings&refs=&path=&hist=&type=&xrd=&nn=2&si=full&searchall=true&si=full
-# Sourcegraph URL
-# http://192.168.64.6/search?q=context:global+repo:%5Egithub%5C.com/sourcegraph/sourcegraph%24+type:symbol+OverwriteSettings&patternType=lucky
 
+# Generic search test case
 location  /source/search {
     if ($arg_full) {
        set $sg_query "$arg_full";
