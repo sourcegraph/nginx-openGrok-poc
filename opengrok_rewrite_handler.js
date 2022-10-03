@@ -19,18 +19,6 @@ var qs = require('querystring');
 var OpenGrok2Sourcegraph = {
 
     /**
-     * very simple helper function that
-     * appends the given value to the string with a delimiter between if 
-     * something already exists
-     */
-    append_to_query: function(query, value) {
-        if (query) {
-            query = query + ' ';
-        }
-        return query + value;
-    },
-
-    /**
      * converts the opengrok /search URL to a Sourcegraph query
      * Arguments:
      *    r - the request object
@@ -45,27 +33,27 @@ var OpenGrok2Sourcegraph = {
             full_query = r.args['full'];
         }
         if ('type' in r.args && r.args['type']) {
-            query = OpenGrok2Sourcegraph.append_to_query(query, 'lang:' + r.args['type']);
+            query += (query ? ' ' : '') + 'lang:' + r.args['type'];
         }
         if ('path' in r.args && r.args['path']) {
-            query = OpenGrok2Sourcegraph.append_to_query(query, 'file:' + r.args['path']);
+            query += (query ? ' ' : '') + 'file:' + r.args['path'];
         }
         if ('project' in r.args && r.args['project']) {
             r.variables.og_project = r.args['project'];
-            query = OpenGrok2Sourcegraph.append_to_query(query, 'repo:^' + r.variables.sg_repo) + '$';
+            query += (query ? ' ' : '') + 'repo:^' + r.variables.sg_repo + '$';
         }
         // in both opengrok and sourcegraph "commit"/"history" searches take
         // presidence over "symbol"/"refs" searches
         if ('hist' in r.args && r.args['hist']) {
-            query = OpenGrok2Sourcegraph.append_to_query(query, 'type:commit ' + r.args['hist']);
+            query += (query ? ' ' : '') + 'type:commit ' + r.args['hist'];
             type_set = true;
         }
         if ('refs' in r.args && r.args['refs']) {
             if (type_set) {
                 // we have both a commit search and symbol so assume both refer to commit
-                query = OpenGrok2Sourcegraph.append_to_query(query, r.args['refs']);
+                query += (query ? ' ' : '') + r.args['refs'];
             } else {
-                query = OpenGrok2Sourcegraph.append_to_query(query, 'type:symbol ' + r.args['refs']);
+                query += (query ? ' ' : '') + 'type:symbol ' + r.args['refs'];
             }
         }
 
@@ -77,7 +65,7 @@ var OpenGrok2Sourcegraph = {
             if (type_set) {
                 query = '(' + query + ') AND ' + full_query;
             } else {
-                query = OpenGrok2Sourcegraph.append_to_query(query, full_query);
+                query += (query ? ' ' : '') + full_query;
             }
         }
         return query;
