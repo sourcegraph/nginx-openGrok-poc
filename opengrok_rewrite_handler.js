@@ -48,7 +48,7 @@ var OpenGrok2Sourcegraph = {
             query = OpenGrok2Sourcegraph.append_to_query(query, 'lang:' + r.args['type']);
         }
         if ('path' in r.args && r.args['path']) {
-            query = OpenGrok2Sourcegraph.append_to_query(query, 'path:' + r.args['path']);
+            query = OpenGrok2Sourcegraph.append_to_query(query, 'file:' + r.args['path']);
         }
         if ('project' in r.args && r.args['project']) {
             r.variables.og_project = r.args['project'];
