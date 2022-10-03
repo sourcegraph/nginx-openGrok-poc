@@ -19,6 +19,19 @@ var qs = require('querystring');
 var OpenGrok2Sourcegraph = {
 
     /**
+     * Returns the sourcegraph repo: query for the given OG project
+     */
+    sg_repo_from_og_project: function(r, project) {
+        r.variables.og_project = project;
+        if (r.variables.sg_repo) {
+            return 'repo:^' + r.variables.sg_repo + '$';
+        } else {
+            r.warn('No Sourcegraph project found for "' + r.variables.og_project + '"');
+            return '';
+        }
+    },
+
+    /**
      * converts the opengrok /search URL to a Sourcegraph query
      * Arguments:
      *    r - the request object
@@ -41,9 +54,24 @@ var OpenGrok2Sourcegraph = {
             query += (query ? ' ' : '') + 'file:' + args['path'];
         }
         if ('project' in args && args['project']) {
-            r.variables.og_project = args['project'];
-            query += (query ? ' ' : '') + 'repo:^' + r.variables.sg_repo + '$';
+            if (!Array.isArray(args['project'])) {
+                var q = OpenGrok2Sourcegraph.sg_repo_from_og_project(r, args['project']);
+                if (q) query += (query ? ' ' : '') + q;
+            } else {
+                var repos = [];
+                for (var p in args['project']) {
+                    var q = OpenGrok2Sourcegraph.sg_repo_from_og_project(r, args['project'][p]);
+                    if (q) repos.push(q);
+                }
+                if (repos.length == 1) {
+                    query += (query ? ' ' : '') + repos;
+                } else if (repos.length > 1) {
+                    // should be (repo:x OR repo:y ...)
+                    query += (query ? ' ' : '') + '(' + repos.join(' OR ') + ')';
+                }
+            }
         }
+
         // in both opengrok and sourcegraph "commit"/"history" searches take
         // presidence over "symbol"/"refs" searches
         if ('hist' in args && args['hist']) {
