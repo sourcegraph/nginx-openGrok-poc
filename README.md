@@ -2,42 +2,20 @@
 This repository contains configuration for nginx that will transform common OpenGrok URLL patterns to Sourcegraph URLs.
 
 
-For Example:
+## Examples
 
-### **File**
-**OpenGrok URL**
-```
-http://192.168.64.6:8080/source/xref/sourcegraph/client/web/src/enterprise/code-monitoring/testing/
-```
-**Sourcegraph URL**
-```
-http://192.168.64.6/github.com/sourcegraph/sourcegraph/-/blob/client/web/src/enterprise/code-monitoring/testing/
-```
+| Search Type | OpenGrok URL      | Sourcegraph URL     |
+|-------------------|-------------------|-------------------|
+| View a file or directory | `/source/xref/sourcegraph/client/web/src/enterprise/code-monitoring/testing/` | `/github.com/sourcegraph/sourcegraph/-/blob/client/web/src/enterprise/code-monitoring/testing/` |
+| View File at specific hash` | `/source/xref/sourcegraph/client/web/src/enterprise/code-monitoring/testing/util.ts?r=b23a28ce` | `/github.com/sourcegraph/sourcegraph@b23a28ce/-/blob/client/web/src/enterprise/code-monitoring/testing/util.ts` |
+| Search for `TODO` in Go files in path `cmd/` | `/source/search?project=sourcegraph&full=TODO&defs=&refs=&path=cmd%2F&hist=&type=golang&xrd=&nn=1` | `/search?q=lang%3Agolang file%3Acmd%2F repo%3A^github.com%2Fsourcegraph%2Fsourcegraph%24 TODO` |
 
-### **File with Hash**
-**OpenGrok URL**
-```
-http://192.168.64.6:8080/source/xref/sourcegraph/client/web/src/enterprise/code-monitoring/testing/util.ts?r=b23a28ce
-```
-**Sourcegraph URL**
-```
-http://192.168.64.6/github.com/sourcegraph/sourcegraph@b23a28ce/-/blob/client/web/src/enterprise/code-monitoring/testing/util.ts
-```
-### **Symbol Search**
-**OpenGrok URL**
-```
-http://192.168.64.6:8080/source/search?full=&defs=OverwriteSettings&refs=&path=&hist=&type=&xrd=&nn=2&si=full&searchall=true&si=full
-```  
-**Sourcegraph URL**
-```
-http://192.168.64.6/search?q=context:global+repo:%5Egithub%5C.com/sourcegraph/sourcegraph%24+type:symbol+OverwriteSettings&patternType=lucky
-```
 
 # Installation
 
 ## Prerequisites
 
-Your nginx installation must have [`ngx_http_js_module`](https://nginx.org/en/docs/http/ngx_http_js_module.html#js_import) installed.  The code assumes you have v0.4.4.
+Your nginx installation must have [`ngx_http_js_module`](https://nginx.org/en/docs/http/ngx_http_js_module.html#js_import) installed.  The code assumes you have [v0.4.4](https://nginx.org/en/docs/njs/changes.html#njs0.4.4).
 
 ## Steps
 
@@ -66,7 +44,9 @@ http {
         default "http://sourcegraph.mikemclaughlin.org:7080";
     }
     # map OpenGrok projects to Sourcegraph repos
+    # volatile is required to match multiple projects in URL
     map $og_project $sg_repo {
+        volatile;
         sourcegraph "github.com/sourcegraph/sourcegraph";
     }
 
