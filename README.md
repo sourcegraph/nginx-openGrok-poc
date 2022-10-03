@@ -1,13 +1,12 @@
 # Overview
-This repository contains configuration for nginx that will transform common OpenGrok URLL patterns to Sourcegraph URLs.
-
+This repository contains configuration for nginx that will transform common OpenGrok URL patterns to Sourcegraph URLs.
 
 ## Examples
 
 | Search Type | OpenGrok URL      | Sourcegraph URL     |
 |-------------------|-------------------|-------------------|
 | View a file or directory | `/source/xref/sourcegraph/client/web/src/enterprise/code-monitoring/testing/` | `/github.com/sourcegraph/sourcegraph/-/blob/client/web/src/enterprise/code-monitoring/testing/` |
-| View File at specific hash` | `/source/xref/sourcegraph/client/web/src/enterprise/code-monitoring/testing/util.ts?r=b23a28ce` | `/github.com/sourcegraph/sourcegraph@b23a28ce/-/blob/client/web/src/enterprise/code-monitoring/testing/util.ts` |
+| View File at specific hash | `/source/xref/sourcegraph/client/web/src/enterprise/code-monitoring/testing/util.ts?r=b23a28ce` | `/github.com/sourcegraph/sourcegraph@b23a28ce/-/blob/client/web/src/enterprise/code-monitoring/testing/util.ts` |
 | Search for `TODO` in Go files in path `cmd/` | `/source/search?project=sourcegraph&full=TODO&defs=&refs=&path=cmd%2F&hist=&type=golang&xrd=&nn=1` | `/search?q=lang%3Agolang file%3Acmd%2F repo%3A^github.com%2Fsourcegraph%2Fsourcegraph%24 TODO` |
 
 
@@ -19,15 +18,15 @@ Your nginx installation must have [`ngx_http_js_module`](https://nginx.org/en/do
 
 ## Steps
 
-(If these files are not placed in the same locaiton as `nginx.conf` be sure to adjust the path to the `js_import`.)
+(If these files are not placed in the same locaiton as `nginx.conf` be sure to adjust the path to the `js_import` and `include`.)
 
 1. Open `opengrokrewrite.conf` and update the `map $og_project $sg_repo` with the projects in your OpenGrok deployment.
 2. Add `opengrok_rewrite_handler.js` to your nginx configuration directory.
-3. Add `opengrokrewrite.conf` to your nginx configuration directory.
+3. Add `opengrok_rewrite.conf` to your nginx configuration directory.
 
 # Configuration
 
-This nginx configuration requires some configuration be provided.
+This nginx configuration requires some additional configuration.
 
 ## nginx.conf
 
@@ -72,4 +71,3 @@ server {
 * [source code for `ngx_http_js_module`](https://github.com/nginx/njs/blob/0.4.4/nginx/ngx_http_js_module.c)
 * [njs examples](https://github.com/nginx/njs-examples)
 
-http://localhost:8090/source/search?project=sourcegraph&full=test&defs=&refs=&path=dev&hist=&type=typescript&xrd=&nn=1
