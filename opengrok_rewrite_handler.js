@@ -30,6 +30,7 @@ var OpenGrok2Sourcegraph = {
         var full_query = '';
         var type_set = false;
         var args = qs.parse(r.variables.args);
+
         if ('full' in args && args['full']) {
             full_query = args['full'];
         }
@@ -82,7 +83,7 @@ var OpenGrok2Sourcegraph = {
     HandleSearch: function(r) {
         var sgq = OpenGrok2Sourcegraph.sg_query_from_opengrok_search(r);
 
-        r.return(301, r.variables.SOURCEGRAPH_URL + '?q=' + qs.escape(sgq));
+        r.return(301, r.variables.SOURCEGRAPH_URL + '?' + qs.stringify({'q': sgq}));
 
         return 0;
     }
