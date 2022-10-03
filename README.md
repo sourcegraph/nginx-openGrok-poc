@@ -41,7 +41,7 @@ http {
   ...
     # create a top level variable for SOURCEGRAPH_URL (update to match your environment)
     map "" $SOURCEGRAPH_URL {
-        default "http://sourcegraph.mikemclaughlin.org:7080";
+        default "http://YOUR_SOURCEGRAPH_ENDPOINT_HERE";
     }
     # map OpenGrok projects to Sourcegraph repos
     # volatile is required to match multiple projects in URL
