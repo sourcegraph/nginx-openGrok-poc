@@ -29,31 +29,32 @@ var OpenGrok2Sourcegraph = {
         var query = '';
         var full_query = '';
         var type_set = false;
-        if ('full' in r.args && r.args['full']) {
-            full_query = r.args['full'];
+        var args = qs.parse(r.variables.args);
+        if ('full' in args && args['full']) {
+            full_query = args['full'];
         }
-        if ('type' in r.args && r.args['type']) {
-            query += (query ? ' ' : '') + 'lang:' + r.args['type'];
+        if ('type' in args && args['type']) {
+            query += (query ? ' ' : '') + 'lang:' + args['type'];
         }
-        if ('path' in r.args && r.args['path']) {
-            query += (query ? ' ' : '') + 'file:' + r.args['path'];
+        if ('path' in args && args['path']) {
+            query += (query ? ' ' : '') + 'file:' + args['path'];
         }
-        if ('project' in r.args && r.args['project']) {
-            r.variables.og_project = r.args['project'];
+        if ('project' in args && args['project']) {
+            r.variables.og_project = args['project'];
             query += (query ? ' ' : '') + 'repo:^' + r.variables.sg_repo + '$';
         }
         // in both opengrok and sourcegraph "commit"/"history" searches take
         // presidence over "symbol"/"refs" searches
-        if ('hist' in r.args && r.args['hist']) {
-            query += (query ? ' ' : '') + 'type:commit ' + r.args['hist'];
+        if ('hist' in args && args['hist']) {
+            query += (query ? ' ' : '') + 'type:commit ' + args['hist'];
             type_set = true;
         }
-        if ('refs' in r.args && r.args['refs']) {
+        if ('refs' in args && args['refs']) {
             if (type_set) {
                 // we have both a commit search and symbol so assume both refer to commit
-                query += (query ? ' ' : '') + r.args['refs'];
+                query += (query ? ' ' : '') + args['refs'];
             } else {
-                query += (query ? ' ' : '') + 'type:symbol ' + r.args['refs'];
+                query += (query ? ' ' : '') + 'type:symbol ' + args['refs'];
             }
         }
 
