@@ -1,6 +1,6 @@
 /*
  * This is an nginx handler for the ngx_http_js_module module.
- * It handles rewriting OpenGrok search URLs to Sourcegraph query. 
+ * It handles rewriting OpenGrok search URLs to Sourcegraph query.
  *    # OpenGrok search
  *    /<root>/search
  *         ?project=sourcegraph
@@ -20,6 +20,15 @@ var OpenGrok2Sourcegraph = {
 
     /**
      * Returns the sourcegraph repo: query for the given OG project
+     * Arguments:
+     *    r - the request object
+     *    project - the project name
+     * Returns:
+     *    The mapped sourcegraph repo name in the format:
+     *       repo:^<mapped value>$
+     *    or empty string when maped repo not found
+     * Side Effects:
+     *    Logs warning if no mapped repo is found.
      */
     sg_repo_from_og_project: function(r, project) {
         r.variables.og_project = project;
@@ -32,13 +41,13 @@ var OpenGrok2Sourcegraph = {
     },
 
     /**
-     * converts the opengrok /search URL to a Sourcegraph query
+     * Converts the opengrok /search URL to a Sourcegraph query
      * Arguments:
      *    r - the request object
      * returns:
-     *   the Sourcegraph query
+     *   the equivalent Sourcegraph query
      */
-    sg_query_from_opengrok_search: function (r) {
+    get_sg_query_from_opengrok_search: function (r) {
         var query = '';
         var full_query = '';
         var type_set = false;
@@ -100,22 +109,19 @@ var OpenGrok2Sourcegraph = {
         }
         return query;
     },
-    
+
     /**
      * ngx_http_js_module handler
-     * add:
-     *    js_content opengrok_rewrite_handler.OpenGrok2Sourcegraph.HandleSearch;
-     * to your location section
-     * TODO: add more details
+     * see README for installation instructions.
      */
     HandleSearch: function(r) {
-        var sgq = OpenGrok2Sourcegraph.sg_query_from_opengrok_search(r);
-
-        r.return(301, r.variables.SOURCEGRAPH_URL + '?' + qs.stringify({'q': sgq}));
-
+        // convert the request to a sourcegraph query
+        var sgq = OpenGrok2Sourcegraph.get_sg_query_from_opengrok_search(r);
+        // redirect the user to the sourcegraph server with this query
+        r.return(301, r.variables.SOURCEGRAPH_URL + '?' + qs.stringify({ 'q': sgq }));
+        // return 0 to indicate OK
         return 0;
     }
 }
 
-
-export default {OpenGrok2Sourcegraph};
+export default { OpenGrok2Sourcegraph };
