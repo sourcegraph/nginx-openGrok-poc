@@ -1,52 +1,73 @@
-# nginx-openGrok-poc
-This is an example proof of concept for an nginx server using the rewrite directive to transform common openGrok query urls repo and file (with hash), and symbol searches to Sourcegraph query urls.
+# Overview
+This repository contains configuration for nginx that will transform common OpenGrok URL patterns to Sourcegraph URLs.
 
-> *Make sure to check out the [redirect-to-search branch](https://github.com/sourcegraph/nginx-openGrok-poc/tree/redirect-to-search) for alternate behavior*
+## Examples
 
-For Example:
+| Search Type | OpenGrok URL      | Sourcegraph URL     |
+|-------------------|-------------------|-------------------|
+| View a file or directory | `/source/xref/sourcegraph/client/web/src/enterprise/code-monitoring/testing/` | `/github.com/sourcegraph/sourcegraph/-/blob/client/web/src/enterprise/code-monitoring/testing/` |
+| View File at specific hash | `/source/xref/sourcegraph/client/web/src/enterprise/code-monitoring/testing/util.ts?r=b23a28ce` | `/github.com/sourcegraph/sourcegraph@b23a28ce/-/blob/client/web/src/enterprise/code-monitoring/testing/util.ts` |
+| Search for `TODO` in Go files in path `cmd/` | `/source/search?project=sourcegraph&full=TODO&defs=&refs=&path=cmd%2F&hist=&type=golang&xrd=&nn=1` | `/search?q=lang%3Agolang file%3Acmd%2F repo%3A^github.com%2Fsourcegraph%2Fsourcegraph%24 TODO` |
 
-### **File**
-**OpenGrok URL**
+
+# Installation
+
+## Prerequisites
+
+Your nginx installation must have [`ngx_http_js_module`](https://nginx.org/en/docs/http/ngx_http_js_module.html#js_import) installed.  The code assumes you have [v0.4.4](https://nginx.org/en/docs/njs/changes.html#njs0.4.4).
+
+## Steps
+
+(If these files are not placed in the same locaiton as `nginx.conf` be sure to adjust the path to the `js_import` and `include`.)
+
+1. Open `opengrokrewrite.conf` and update the `map $og_project $sg_repo` with the projects in your OpenGrok deployment.
+2. Add `opengrok_rewrite_handler.js` to your nginx configuration directory.
+3. Add `opengrok_rewrite.conf` to your nginx configuration directory.
+
+# Configuration
+
+This nginx configuration requires some additional configuration.
+
+## nginx.conf
+
+In your `nginx.conf` configuration, add :
+
 ```
-http://192.168.64.6:8080/source/xref/sourcegraph/client/web/src/enterprise/code-monitoring/testing/
-```
-**Sourcegraph URL**
-```
-http://192.168.64.6/github.com/sourcegraph/sourcegraph/-/blob/client/web/src/enterprise/code-monitoring/testing/
+...
+load_module modules/ngx_http_js_module.so;
+...
+http {
+  ...
+    # create a top level variable for SOURCEGRAPH_URL (update to match your environment)
+    map "" $SOURCEGRAPH_URL {
+        default "http://YOUR_SOURCEGRAPH_ENDPOINT_HERE";
+    }
+    # map OpenGrok projects to Sourcegraph repos
+    # volatile is required to match multiple projects in URL
+    map $og_project $sg_repo {
+        volatile;
+        sourcegraph "github.com/sourcegraph/sourcegraph";
+    }
+
+    js_import opengrok_rewrite_handler.js;
+   ...
+}
 ```
 
-### **File with Hash**
-**OpenGrok URL**
+In the `server` configuration for the host that will be receiving the OpenGrok requests add:
+
 ```
-http://192.168.64.6:8080/source/xref/sourcegraph/client/web/src/enterprise/code-monitoring/testing/util.ts?r=b23a28ce
-```
-**Sourcegraph URL**
-```
-http://192.168.64.6/github.com/sourcegraph/sourcegraph@b23a28ce/-/blob/client/web/src/enterprise/code-monitoring/testing/util.ts
-```
-### **Symbol Search**
-**OpenGrok URL**
-```
-http://192.168.64.6:8080/source/search?full=&defs=OverwriteSettings&refs=&path=&hist=&type=&xrd=&nn=2&si=full&searchall=true&si=full
-```  
-**Sourcegraph URL**
-```
-http://192.168.64.6/search?q=context:global+repo:%5Egithub%5C.com/sourcegraph/sourcegraph%24+type:symbol+OverwriteSettings&patternType=lucky
+server {
+...
+    include "opengrok_rewrite.conf";
+...
+}
+
 ```
 
-The rewrite rules contained in `openGrokRewrite.conf.template` are applied when a Sourcegraph instance recieves requests redirected from an openGrok domain to a sourcegraph instance domain, while maintaining the openGrok url subdirectory scheme. Nginx rewrite rules are applied to urls with subdirectories starting in `/source/xref` or `/source/search/`.
+# Helpful Documentation
 
-This is not a full fledged Sourcegraph deployment and is meant primarily as a proof of concept for rewrite rules to be employed in an nginx service in front of a [docker-compose](www.github.com/sourcegraph/deploy-sourcegraph-docker) Sourcegraph deployment. *Note currently Caddy is our standard proxy service for docker-compose Sourcegraph*
-
-# Limitations
-
-This nginx configuration can only redirect OpenGrok Urls to Sourcegraph Urls from a specified codehost.
-
-Nginx rewrite rules do not support conditional redirects based on http response (this service is available via [openResty](https://github.com/openresty/lua-nginx-module#readme), or the [Nginx Plus](https://www.nginx.com/products/nginx/modules/lua/) paid service).
-
-This presents a major limitation, in that OpenGrok's url schema contains no information about the codehost associated with a repo to extract and use to construct a Sourcegraph url, which does include a codehost. A try block allowing requests to each possible codehost url with a redirect to the first 200 http response would accomplish this, but currently this is unsupported by nginx.
-
-> **An alternative strategy is to redirect open grok repo and file specific nav to general Sourcegraph search results, i.e. an openGrok file url, will direct you to a sourcegraph search for any codehost containing a repo with the same top level directory and filepath -- for this redirect strategy see the [redirect-to-search](https://github.com/sourcegraph/nginx-openGrok-poc/tree/redirect-to-search) branch of this repo.**
-
-That said, a configuration using the openresty image, or a middleware built into Sourcegraph's frontend are still possibilities being investigated. 
+* [njs reference](https://nginx.org/en/docs/njs/reference.html)
+* [source code for `ngx_http_js_module`](https://github.com/nginx/njs/blob/0.4.4/nginx/ngx_http_js_module.c)
+* [njs examples](https://github.com/nginx/njs-examples)
 
