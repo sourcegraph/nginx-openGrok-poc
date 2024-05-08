@@ -1,0 +1,41 @@
+# Project name
+name: redirect-to-sourcegraph
+
+services:
+  # Disk: 1GB persistent SSD
+  # Ports exposed to other Sourcegraph services: none
+  # Ports exposed to the public internet: 80 (HTTP) and 443 (HTTPS)
+  redirect-to-sourcegraph:
+    container_name: redirect-to-sourcegraph
+    image: 'nginx:stable'
+    cpus: 2
+    mem_limit: '2g'
+    environment:
+      # The hostname of your OpenGrok instance
+      # Include the subdomain, but not protocol, ex: www.
+      - 'OPENGROK_HOST=opengrok.example.com'
+      # The URL to your Sourcegrpah instance to redirect to
+      # Include the subdomain, and protocol, ex: https://www.
+      - 'SOURCEGRAPH_URL=https://sourcegraph.com'
+    volumes:
+      - './nginx.conf:/etc/nginx/templates/nginx.conf.template'
+      - './redirect_to_sourcegraph.js:/etc/nginx/redirect_to_sourcegraph.js'
+    ports:
+      - '0.0.0.0:80:80'
+      - '0.0.0.0:443:443'
+    networks:
+      - sourcegraph
+    command: >
+            /bin/sh -c
+            "envsubst '
+            $${SOURCEGRAPH_URL}
+            $${OPENGROK_HOST}
+            '< /etc/nginx/templates/nginx.conf.template
+            > /etc/nginx/nginx.conf
+            && nginx -g 'daemon off;'"
+    restart: always
+
+volumes:
+  redirect-to-sourcegraph:
+networks:
+  sourcegraph:
